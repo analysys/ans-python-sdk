@@ -69,8 +69,17 @@ def checkData(data):
                         "The input key must be begin with $ or a-zA-Z,and contains $ a-z A-Z 0-9 _")
                 if is_str(xcontext_value):
                     if len(str(xcontext_value)) > 255:
-                        raise AnalysysPythonSdkIllegalDataException("The max length of string is 255")
+                        print("Warning:The max length of string is 255")
+                    if len(str(xcontext_value)) > 8192:
+                        value[xcontext_key] = xcontext_value[0:8191] + "$"
                 if isinstance(xcontext_value, list):
+                    for i in range(len(xcontext_value)):
+                        if not is_str(xcontext_value[i]):
+                            raise AnalysysPythonSdkIllegalDataException("The input list value must be string.")
+                        if len(str(xcontext_value[i])) > 255:
+                            print("Warning:The max length of string is 255")
+                        if len(str(xcontext_value[i])) > 8192:
+                            xcontext_value[i] = xcontext_value[i][0:8192]+"$"
                     if len(xcontext_value) > 100:
                         raise AnalysysPythonSdkIllegalDataException("The max length of list are 100.")
             for xcontext_key in list(value):

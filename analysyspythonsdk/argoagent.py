@@ -9,7 +9,7 @@ from analysyspythonsdk.defaultcollecter import *
 from analysyspythonsdk.batchcollecter import *
 
 # print(platform.python_version())
-__PYTHON_SDK_VERSION__ = "4.0.6"
+__PYTHON_SDK_VERSION__ = "4.0.9"
 if re.match(r"^2",platform.python_version()):
     import sys
     reload(sys)

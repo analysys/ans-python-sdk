@@ -18,24 +18,26 @@ class Demo():
         collector = DefaultCollecter(server_url)
         eguan = AnalysysPythonSdk(collector)
         #注意：此方法为必须调用方法。设置项目名称，用户请填写在数据端新建的项目名，例如：
-        eguan.setAppId("ssss")
+        eguan.setAppId("fangzhouargo")
         #设备debug模式，允许设置0,1,2.默认为0,不打印日志，数据进行统计分析。设置为1时打印日志，上传的数据不进行统计分析。设置为2时打印日志，上传的数据进行统计分析。例如：
         eguan.setDebugMode(2)
-        #记录用户登录事件
-        distinct_id = "aaaaa"
-        eguan.track(distinct_id,"u7777777",None,python_sdk_platform,is_login=True,)
-        # eguan.close()
 
-        #场景二：某电商追踪用户浏览商品和下订单等事件
+        #场景一:记录用户事件,事件不带属性
+        distinct_id = "ABCD1234"
+        eguan.track(distinct_id,"event_test",None,python_sdk_platform,is_login=False)
+
+        #场景二：某电商追踪用户浏览商品和下订单等事件,事件带属性
         superProperties = {
             "member" : "VIP",
             "age" : 20
 
         }
+        #注册通用属性
         eguan.registerSuperProperties(superProperties)
+        #获取已存在的通用属性
         eguan.getAllSuperProperties()
         eguan.getSingleSuperProperties("member")
-        distinct_id = "ABCDE112345"
+        #事件属性
         properties = {
             #浏览商品用户的外网IP
             "ip" : "169.169.169.169",
@@ -44,14 +46,12 @@ class Demo():
             #浏览商品的ID
             "productId" : "666",
             #浏览商品的类别
-            "productCatalog" : "electronic",
-            "$debug" : "android",
-            "$lib" : "AAAAAAA",
-             "abc" : ""
+            "productCatalog" : "electronic"
         }
-        #浏览商品跟踪
 
+        #浏览商品跟踪
         eguan.track(distinct_id,"view_product",properties,python_sdk_platform,False)
+        #删除通用属性
         eguan.unregisterSuperProperties("age")
         eguan.getAllSuperProperties()
 
@@ -61,12 +61,12 @@ class Demo():
             "isPay" : True
         }
         #商品是否支付跟踪
-        eguan.track(distinct_id,"payment",properties,python_sdk_platform,True)
+        eguan.track(distinct_id,"payment",properties,python_sdk_platform,False)
         eguan.close()
 
         #场景三：用户识别
-        alias_id = "12345"
-        distinct_id = "xiaoming"
+        alias_id = "xiaoming"
+        distinct_id = "123456"
         #调用alias方法，将用户登录前和登录后的ID进行关联
         eguan.alias(alias_id,distinct_id,python_sdk_platform)
 
@@ -77,7 +77,7 @@ class Demo():
             "sex": "male",
             "age": 31,
             "login_time": time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()),
-            "$email" : "XXX@qq.com"
+            "$email" : "XXX@qq.com",
         }
         eguan.profile_set(distinct_id,properties,python_sdk_platform,True)
 
@@ -85,7 +85,7 @@ class Demo():
         distinct_id = "DDDDDDDDDDDDD"
         properties = {
             "sex" : "female",
-            "activationTime" : "1534249333700"
+            "activationTime" : "129844323234343"
         }
         eguan.profile_set_once(distinct_id,properties,python_sdk_platform)
 
@@ -96,7 +96,7 @@ class Demo():
         #场景七：设置用户列表类型属性
         distinct_id = "FFFFFFFFFFFF"
         properties = {
-            "hobby" : ["basketball","music","read"],
+            "hobby" : ["basketball","music","游泳"],
             "movies" : ["大话西游","一出好戏"]
         }
         eguan.profile_append(distinct_id,properties,python_sdk_platform,True)
@@ -110,7 +110,7 @@ class Demo():
         eguan.profile_delete(distinct_id,python_sdk_platform,True)
 
     def testBatchCollecter(self):
-        collector = BatchCollecter(server_url, 20, 3, 100, 1000, request_timeout=None)
+        collector = BatchCollecter(server_url, 20, 5, 100, 1000, request_timeout=None)
         analysys = AnalysysPythonSdk(collector)
         analysys.setDebugMode(2)
         analysys.setAppId("Eguan")
@@ -134,7 +134,7 @@ class Demo():
         analysys.profile_set("555", property,python_sdk_platform)
         analysys.profile_set_once("666", {"registerTime": "2018-08-05"},python_sdk_platform)
         analysys.profile_increment("777", {"age": 20},python_sdk_platform)
-        analysys.profile_append("123321", {"property": [1, "中文"]},python_sdk_platform)
+        analysys.profile_append("123321", {"property": ["bafa", "中文"]},python_sdk_platform)
         analysys.profile_unset("123321", ["interest"], python_sdk_platform,True)
         analysys.profile_delete("123321",python_sdk_platform)
         analysys.close()
