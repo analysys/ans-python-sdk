@@ -7,7 +7,7 @@ This is the official Python SDK for Argo.
 
 ## Learn More
 
-please visit [more](https://ark.analysys.cn/docs/sdk-python.html)
+please visit [more](https://docs.analysys.cn/ark/integration/sdk/python)
 
 
 ## License
