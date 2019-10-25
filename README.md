@@ -1,9 +1,9 @@
 
-# Argo Python SDK
+# Analysys Python SDK
 
 ========
 
-This is the official Python SDK for Argo.
+This is the official Python SDK for Analysys.
 
 ## Learn More
 
