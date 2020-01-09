@@ -1,6 +1,6 @@
 # _*_coding:utf-8_*_
 
-import json
+import time
 from analysyspythonsdk.defaultcollecter import *
 from threading import Thread,Event
 
@@ -17,7 +17,6 @@ class AnalysysPythonSdkNetworkException(Exception):
 class BatchCollecter(DefaultCollecter):
 
     class UploadMonitorThread(Thread):
-
         def __init__(self, collecter):
             super(BatchCollecter.UploadMonitorThread, self).__init__()
             self._collecter = collecter
@@ -38,7 +37,7 @@ class BatchCollecter(DefaultCollecter):
                     break
             self._finished_event.set()
 
-    def __init__(self,server_url,max_interval_time=15,queue_cache_max_size=10,collecter_max_size=100,queue_max_size=1000,request_timeout=None):
+    def __init__(self,server_url,max_interval_time=15,queue_cache_max_size=20,collecter_max_size=100,queue_max_size=1000,request_timeout=None):
         '''
         初始化 BatchCollecter
         :param server_url: 发送的服务端地址
@@ -62,10 +61,11 @@ class BatchCollecter(DefaultCollecter):
         self._monitor_thread.start()
 
     def uploadData(self,data):
+        time.sleep(0.2)
         try:
             self._queue.put_nowait(data)
             if data["xwhat"] == "$alias":
-                self._original_data.append(data)
+                self._original_data.append(self._queue.get_nowait())
                 self.flush()
                 self._original_data.pop()
         except Queue.Full as e:
@@ -85,16 +85,43 @@ class BatchCollecter(DefaultCollecter):
                 else:
                     break
         if len(self._original_data) > 0:
-            if self._original_data[0]['xcontext']['$debug'] == 1 or self._original_data[0]['xcontext']['$debug'] == 2 :
-                print("Send message to server:", self._server_url, "data(Batchcollecter):",self._original_data)
             try:
-                self._sendRequest(self._base64Data(json.dumps(self._original_data,ensure_ascii=False)))
+                self._sendRequestBatch(self._base64Data(json.dumps(self._original_data,ensure_ascii=False)))
                 send_flag = True
                 self._original_data = []
             except AnalysysPythonSdkNetworkException as e:
                 if throw_exception:
                     raise e
         return send_flag
+    def _logDataBatch(self):
+        if self._original_data[0]["xcontext"]["$debug"] == 1 or self._original_data[0]["xcontext"]["$debug"] == 2:
+            if re.match(r"^2", platform.python_version()):
+                print("Send message to server:", json.dumps(self._server_url), "data(Batchcollecter):", json.dumps(self._original_data))
+            else:
+                print("Send message to server:", self._server_url, "data(Batchcollecter):",self._original_data)
+            self._response = self._response.decode()
+            print("Response Code:", self._response)
+            if "200" in self._response or self._response == "H4sIAAAAAAAAAKtWSs5PSVWyMjIwqAUAVAOW6gwAAAA=" :
+                print("Send Message Success！")
+            else:
+                print("Send Message Failed!")
+
+    def _sendRequestBatch(self,data):
+        try:
+            request = urllib2.Request(self._server_url,data)
+            if self._request_timeout is not None:
+                response = urllib2.urlopen(request, timeout=self._request_timeout)
+                self._response = response.read()
+                self._logDataBatch()
+            else:
+                response = urllib2.urlopen(request)
+                self._response = response.read()
+                self._logDataBatch()
+        except urllib2.HTTPError as e:
+            raise AnalysysPythonSdkNetworkException("The server could't fulfill the request. Error code:",e)
+        except urllib2.URLError as e:
+            raise AnalysysPythonSdkNetworkException("Failed to reache the server. Reason:",e)
+        return True
 
     def close(self):
         self._monitor_thread.stop()
